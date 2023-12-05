@@ -111,6 +111,7 @@ const DashboardScreen = ({navigation}) => {
             maxHeight: 500 ,
             maxWidth: 500,
             saveToPhotos: true,
+            quality:1
           }).then((res)=>{
             if (fileResponse?.length) {
               let tmp = [...fileResponse, ...res?.assets];
