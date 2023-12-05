@@ -143,7 +143,7 @@ const UserDataScreen = ({route, navigation}) => {
                         setUpdateData(item?.uri);
                       }else{
                         if(shareData?.includes(item?.uri)){
-                          setShareData(shareData.filter((a)=> a !== item));setUpdateData('5');
+                          setShareData(shareData.filter((a)=> a !== item?.uri));setUpdateData('5');
                         }else{
                           shareData?.push(item?.uri);
                           setUpdateData(item.uri);
