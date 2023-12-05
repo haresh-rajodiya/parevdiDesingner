@@ -5,17 +5,38 @@ import {
   Text,
   StyleSheet,
   Image,
-  FlatListComponent,
   FlatList,
   TouchableOpacity,
   Alert,
+  ImageBackground,
 } from 'react-native';
 import {load, save} from './helper/storage';
-import FastImage from 'react-native-fast-image';
-
-// create a component
+import Share from 'react-native-share'
 const UserDataScreen = ({route, navigation}) => {
+
   const data = route.params.userData;
+  const [shareData, setShareData] =useState([])
+  const [updateData, setUpdateData] =useState()
+  console.log(shareData);
+  const onShare = async ()=>{
+    try {
+      await Share.open({urls: shareData})
+      .then((res) => {
+        setShareData([]);
+      })
+      .catch((err) => {
+       console.log(err);
+      });/*  */
+    } catch (error) {
+      console.log(error);
+    }
+   
+  }
+  
+  useEffect(()=>{
+     
+  },[shareData])
+
 
   const deleteItem = async () => {
     Alert.alert(
@@ -33,13 +54,11 @@ const UserDataScreen = ({route, navigation}) => {
             var data1 = await load('dummyData');
             let item1 = JSON.parse(data1);
             let temp = [];
-            console.log('item1', item1);
             item1.map((item, index) => {
               if (index !== data.index) {
                 temp.push(item);
               }
             });
-            console.log('temp', temp);
             await save('dummyData', JSON.stringify(temp));
             navigation.goBack();
           },
@@ -49,13 +68,14 @@ const UserDataScreen = ({route, navigation}) => {
   };
 
   const onPreesImage = (item) => {
-    navigation.navigate('Preview',{image:item})
+  //  shareData?.length === 0 ?
+    navigation?.navigate('Preview',{image:item})
 }
 
 
   return (
-    <View style={styles.container}>
-      <View
+    <View style={styles.container}> 
+      <View 
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -105,17 +125,54 @@ const UserDataScreen = ({route, navigation}) => {
               renderItem={({item}) => {
                 return ( 
                   <TouchableOpacity 
-                  onPress={()=>onPreesImage(item?.uri)}
+                  onLongPress={()=>{
+                    if(shareData?.length== 0){
+                      shareData?.push(item?.uri);
+                      setUpdateData(item?.uri);
+                    }else{
+                      if(!shareData?.includes(item?.uri)){
+                        shareData?.push(item?.uri);
+                        setUpdateData(item.uri);
+                      }
+                    }
+                  }}
+                  onPress={()=>{
+                    if (shareData?.length>0){
+                      if(shareData?.length== 0){
+                        shareData?.push(item?.uri);
+                        setUpdateData(item?.uri);
+                      }else{
+                        if(shareData?.includes(item?.uri)){
+                          setShareData(shareData.filter((a)=> a !== item));setUpdateData('5');
+                        }else{
+                          shareData?.push(item?.uri);
+                          setUpdateData(item.uri);
+                        }
+                      }
+                    }else{
+                      onPreesImage(item?.uri)
+                    }
+
+                  }}
                     style={styles.imagesView}>
-                    <FastImage
-                    onLoad={()=>{
-                      console.log(item?.uri)
-                    }}
+
+                    {shareData?.includes(item.uri) ? 
+                    <ImageBackground
+                    blurRadius={3}
+                    borderRadius={10}
                       source={{
                         uri: item.uri,
                       }}
-                      style={{height: 100, width: 100, resizeMode: 'contain',borderRadius:10,}}
-                    />
+                      style={{height: 100, width: 100, resizeMode: 'contain',borderRadius:10,alignItems:'center', justifyContent:'center'}}
+                    >
+                    <Image style={{height:40, width:40}} source={require('../assest/checkmark.png')}></Image>
+                    </ImageBackground>
+                    :<Image
+                      source={{
+                        uri: item.uri,
+                      }}
+                      style={{height: 100, width: 100, resizeMode: 'contain',borderRadius:10,alignItems:'center', justifyContent:'center'}}
+                    />}
                   </TouchableOpacity>
                 );
               }}
@@ -123,6 +180,20 @@ const UserDataScreen = ({route, navigation}) => {
           </View>
         )}
       </View>
+{shareData?.length>0 ?   
+ <TouchableOpacity
+        style={{
+          alignSelf: 'center',
+          height: 40,
+          width: 100,
+          backgroundColor: '#F4722B',
+          justifyContent: 'center',
+          borderRadius: 10,
+          margin: 10,
+        }}
+        onPress={onShare}>
+        <Text style={{color: 'white', textAlign: 'center'}}>Share</Text>
+      </TouchableOpacity>: null}
     </View>
   );
 };
