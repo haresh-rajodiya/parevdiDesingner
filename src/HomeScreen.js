@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
-  Button,
   Text,
   View,
   TextInput,
@@ -9,9 +8,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  AppState,
 } from 'react-native';
-import ReactNativeBiometrics from 'react-native-biometrics';
 import { load, save } from './helper/storage';
 import { useFocusEffect} from '@react-navigation/native';
 import { isEmpty } from 'lodash';
