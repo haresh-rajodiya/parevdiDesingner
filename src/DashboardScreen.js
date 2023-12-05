@@ -9,6 +9,8 @@ import {
   Image,
   FlatList,
   Alert,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import PrimaryTextInput from './helper/TextInput';
 import DateAndTimePicker from './helper/DateAndTimePicker';
@@ -17,16 +19,17 @@ import {load, save} from './helper/storage';
 import {showMessage} from 'react-native-flash-message';
 import FastImage from 'react-native-fast-image';
 import * as ImagePicker from 'react-native-image-picker';
+import ImagePickerModal from './helper/ImagePicker';
 
 export var isOpenDocumentPressed = false;
 // create a component
 const DashboardScreen = ({navigation}) => {
   const [dateModal, setDateModal] = useState(false);
-  const [a, setA] = useState(false);
   const [date, setDate] = useState('');
   const [name, setName] = useState('');
   const [comment, setComment] = useState('');
   const [fileResponse, setFileResponse] = useState([]);
+  const [visible,setVisible]=useState(false) 
 
   useEffect(() => {
     getDate();
@@ -67,35 +70,8 @@ const DashboardScreen = ({navigation}) => {
     }
   };
 
-  // const openDocument = async () => {
-  //   isOpenDocumentPressed = true;
-  //   try {
-  //     await DocumentPicker.pick({
-  //       allowMultiSelection: true,
-  //       type: [DocumentPicker.types.images],
-  //     })
-  //       .then(res => {
-  //         console.log(res)
-  //         isOpenDocumentPressed = false;
-  //         if (fileResponse.length) {
-  //           let tmp = [...fileResponse, ...res];
-
-  //           const uniqueData = tmp.filter((item, index, self) => {
-  //             return self.findIndex(obj => obj.name === item.name) === index;
-  //           });
-
-  //           setFileResponse(uniqueData);
-  //         } else {
-  //           setFileResponse(res);
-  //         }
-  //       })
-  //       .catch(() => {
-  //         isOpenDocumentPressed = false;
-  //       });
-  //   } catch (err) {}
-  // };
-
   const openDocument = async () => {
+    setVisible(true)
     isOpenDocumentPressed = true;
     await ImagePicker.launchImageLibrary({mediaType:'photo',selectionLimit:100})
     .then(res => {
@@ -109,14 +85,54 @@ const DashboardScreen = ({navigation}) => {
                 });
     
                 setFileResponse(uniqueData);
+                setVisible(false)
               } else {
                 setFileResponse(res?.assets);
+                setVisible(false)
               }
             })
             .catch(() => {
               isOpenDocumentPressed = false;
             });
   };
+
+
+  const onPressCamera = async() => {
+    const isReadGranted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA
+      );
+      if (Platform.OS === "ios" ? true : isReadGranted) {
+        try {
+          await ImagePicker.launchCamera({
+            mediaType: "photo",
+            cameraType: "back",
+            includeExtra: true,
+            presentationStyle: "formSheet",
+            maxHeight: 500 ,
+            maxWidth: 500,
+            saveToPhotos: true,
+          }).then((res)=>{
+            if (fileResponse?.length) {
+              let tmp = [...fileResponse, ...res?.assets];
+  
+              const uniqueData = tmp.filter((item, index, self) => {
+                return self.findIndex(obj => obj.fileName === item.fileName) === index;
+              });
+  
+              setFileResponse(uniqueData);
+              setVisible(false)
+            } else {
+              setFileResponse(res?.assets);
+              setVisible(false)
+            }
+            setVisible(false)
+          })
+        } catch (error) {
+          console.log('error',error)
+        }
+      }
+
+}
 
   const onPressDeleteImage = item => {
     Alert.alert(
@@ -146,6 +162,8 @@ const DashboardScreen = ({navigation}) => {
   const onPreesImage = item => {
     navigation.navigate('Preview', {image: item});
   };
+
+
 
   return (
     <View style={styles.container}>
@@ -225,7 +243,7 @@ const DashboardScreen = ({navigation}) => {
         textInputContainerStyle={{height: 100}}
       />
       <View style={[styles.container1]}>
-        <TouchableOpacity style={{flexDirection: 'row'}} onPress={openDocument}>
+        <TouchableOpacity style={{flexDirection: 'row'}} onPress={()=>setVisible(true)}>
           <Image
             source={require('../assest/photo.png')}
             style={{height: 25, width: 25, margin: 5}}
@@ -243,11 +261,10 @@ const DashboardScreen = ({navigation}) => {
         </TouchableOpacity>
       </View>
       <View style={{flex: 1}}>
-        {fileResponse.length !== 0 && (
+        {fileResponse?.length !== 0 && (
           <View style={[styles.container1]}>
             <FlatList
               data={fileResponse}
-
               renderItem={({item}) => {
                 console.log(item?.fileName)
                 setTimeout(() => {
@@ -321,6 +338,7 @@ const DashboardScreen = ({navigation}) => {
         onPress={onPressDataSave}>
         <Text style={{color: 'white', textAlign: 'center'}}>Save</Text>
       </TouchableOpacity>
+          <ImagePickerModal isVisible={visible} onPressClose={()=>{setVisible(false)}} onPressgallery={openDocument} handleOpenCamera={onPressCamera}/>
     </View>
   );
 };

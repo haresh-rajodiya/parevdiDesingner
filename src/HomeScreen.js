@@ -15,23 +15,14 @@ import ReactNativeBiometrics from 'react-native-biometrics';
 import { load, save } from './helper/storage';
 import { useFocusEffect} from '@react-navigation/native';
 import { isEmpty } from 'lodash';
-import { isOpenDocumentPressed } from './DashboardScreen';
 import FastImage from 'react-native-fast-image';
 
 const HomeScreen = ({ navigation, route }) => {
-  const [isBiometricsSupport, setIsBiometricsSupport] = useState(false);
   const [responce, setResponce] = useState([]);
   const [userData, setUserData] = useState([]);
   const [updateState, setUpdateState] = useState(false);
-  const [bioEnable, setBioEnable] = useState(false);
+
   const [searchText, setSearchText] = useState('');
-
- 
-
-
-
-
-
 
   useFocusEffect(
     React.useCallback(async () => {
@@ -41,8 +32,6 @@ const HomeScreen = ({ navigation, route }) => {
       setUserData(JSON.parse(data1));
     }, []),
   );
-
-
 
   const searchProjectItem = async text => {
     const searchList = responce?.filter((item) => {
@@ -91,11 +80,11 @@ const HomeScreen = ({ navigation, route }) => {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              paddingHorizontal: 20,
+              paddingHorizontal: 10,
             }}>
             <TextInput
               placeholderTextColor={'gray'}
-              style={{ width: '80%', color: 'black' }}
+              style={{ width: '90%', color: 'black',paddingHorizontal:5,borderRadius:10,backgroundColor:'#cfcdc8'}}
               value={searchText}
               onChangeText={text => {
                 searchProjectItem(text);
