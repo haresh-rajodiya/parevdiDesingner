@@ -33,6 +33,7 @@ const DashboardScreen = ({ navigation }) => {
   const [visible, setVisible] = useState(false)
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
+
   useEffect(() => {
     getDate();
   }, []);
@@ -42,40 +43,54 @@ const DashboardScreen = ({ navigation }) => {
     setDate(date);
   };
 
+
+
   const onPressDataSave = async () => {
     if (!name || !comment) {
-      console.log('CALLLLL');
-
       showMessage({
-        message: 'please fill the details',
+        message: 'Please fill in all the details',
         type: 'danger',
         icon: 'warning',
       });
     } else {
-      var data1 = await load('dummyData');
-      const data = {
+      const data1 = await load('dummyData');
+      const newData = {
         date: date,
         name: name,
         comment: comment,
         images: fileResponse,
       };
+  
       if (data1 !== null) {
-        var data2 = JSON.parse(data1);
-        let abc = data2;
-        abc.push(data);
-        await save('dummyData', JSON.stringify(abc));
-        navigation.goBack();
+        const data2 = JSON.parse(data1);
+
+        console.log('data2',data2)
+        const existingItem = data2.find(item => item.name === name);
+  
+        if (existingItem) {
+          showMessage({
+            message: 'Name or ID already exists. Please try another ID or Name.',
+            type: 'danger',
+            icon: 'warning',
+          });
+          setName('')
+        } else {
+          const updatedData = [...data2, newData];
+          await save('dummyData', JSON.stringify(updatedData));
+          navigation.goBack();
+        }
       } else {
-        await save('dummyData', JSON.stringify([data]));
+        await save('dummyData', JSON.stringify([newData]));
         navigation.goBack();
       }
     }
   };
+  
 
   const openDocument = async () => {
     setVisible(true)
     isOpenDocumentPressed = true;
-    await ImagePicker.launchImageLibrary({ mediaType: 'photo', selectionLimit: 100 })
+    await ImagePicker.launchImageLibrary({ mediaType: 'photo', selectionLimit: 100,quality:1 })
       .then(res => {
         console.log(res)
         isOpenDocumentPressed = false;
@@ -113,7 +128,7 @@ const DashboardScreen = ({ navigation }) => {
           maxHeight: 500,
           maxWidth: 500,
           saveToPhotos: true,
-          quality: 1
+          quality: 1,
         }).then((res) => {
           if (fileResponse?.length) {
             let tmp = [...fileResponse, ...res?.assets];
@@ -176,13 +191,26 @@ const DashboardScreen = ({ navigation }) => {
 
   const renderCamera = () => {
     return (
-      <RNCamera
-        style={styles.camera}
-        type={RNCamera.Constants.Type.back}
-        onBarCodeRead={onBarcodeScan}
-        barCodeTypes={[RNCamera.Constants.BarCodeType.qr, RNCamera.Constants.BarCodeType.code128]}
-        captureAudio={false}
-      />
+
+<>
+        <TouchableOpacity
+          style={{alignSelf: 'flex-end', margin: 20 }}
+          onPress={()=>{setIsCameraOpen(false)}}
+        >
+          <Image
+            source={require('../assest/close.png')}
+            style={{ height: 20, width: 20 ,tintColor:'black',resizeMode:'contain'}}
+          />
+        </TouchableOpacity>
+        <RNCamera
+          style={styles.camera}
+          type={RNCamera.Constants.Type.back}
+          onBarCodeRead={onBarcodeScan}
+          barCodeTypes={[RNCamera.Constants.BarCodeType.qr, RNCamera.Constants.BarCodeType.code128]}
+          captureAudio={false}
+        />
+</>
+
     );
   };
 
@@ -193,6 +221,10 @@ const DashboardScreen = ({ navigation }) => {
       navigation.setOptions({ tabBarVisible: true });
     }
   }, [isCameraOpen]);
+
+
+
+ 
 
   return (
     <View style={styles.container}>

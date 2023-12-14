@@ -19,7 +19,7 @@ const LoginScreen = ({ navigation }) => {
    
     if (username === 'Admin' && password === 'Admin') {
    
-      navigation.navigate('Home');
+      navigation.replace('Home');
     } else {
       Alert.alert('Login Failed', 'Please check your username and password.');
     }

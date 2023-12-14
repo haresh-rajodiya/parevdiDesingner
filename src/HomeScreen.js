@@ -7,6 +7,7 @@ import {
   StyleSheet,
   FlatList,
   Alert,
+  BackHandler,
 } from 'react-native';
 import { load, save } from './helper/storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -29,12 +30,9 @@ const HomeScreen = ({ navigation, route }) => {
       setSearchText('');
       setResponce(JSON.parse(data1));
       setUserData(JSON.parse(data1));
+     
     }, []),
   );
-
-
-  console.log('responce',responce)
-
 
   const searchProjectItem = async (text) => {
     const searchList = responce?.filter((item) => {
@@ -75,25 +73,26 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   const onBarcodeScan = (event) => {
-    if(event?.data !== ''){
+    if (event?.data !== '') {
       setSearchText(event?.data);
       searchProjectItem(event?.data)
-      setIsCameraOpen(false); 
+      setIsCameraOpen(false);
     }
   };
   const renderCamera = () => {
     return (
-      <RNCamera
-      style={styles.camera}
-      type={RNCamera.Constants.Type.back}
-      onBarCodeRead={onBarcodeScan}
-      barCodeTypes={[RNCamera.Constants.BarCodeType.qr, RNCamera.Constants.BarCodeType.code128]}
-      captureAudio={false}
-    />
+        <RNCamera
+          style={styles.camera}
+          type={RNCamera.Constants.Type.back}
+          onBarCodeRead={onBarcodeScan}
+          barCodeTypes={[RNCamera.Constants.BarCodeType.qr, RNCamera.Constants.BarCodeType.code128]}
+          captureAudio={false}
+        />
     );
   };
 
   useEffect(() => {
+    setIsCameraOpen(false)
     if (isCameraOpen) {
       navigation.setOptions({ tabBarVisible: false });
     } else {
@@ -217,7 +216,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     backgroundColor: '#cfcfcf',
-    
+
   },
   fontStyle: {
     color: 'black',
