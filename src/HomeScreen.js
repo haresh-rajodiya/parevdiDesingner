@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Alert,
-  Text,
   View,
-  TextInput,
+  Text,
   Image,
   TouchableOpacity,
   StyleSheet,
   FlatList,
+  Alert,
 } from 'react-native';
 import { load, save } from './helper/storage';
-import { useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { isEmpty } from 'lodash';
 import FastImage from 'react-native-fast-image';
+import PrimaryTextInput from './helper/TextInput';
+import { RNCamera } from 'react-native-camera';
 
 const HomeScreen = ({ navigation, route }) => {
   const [responce, setResponce] = useState([]);
@@ -20,6 +21,7 @@ const HomeScreen = ({ navigation, route }) => {
   const [updateState, setUpdateState] = useState(false);
 
   const [searchText, setSearchText] = useState('');
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   useFocusEffect(
     React.useCallback(async () => {
@@ -30,134 +32,180 @@ const HomeScreen = ({ navigation, route }) => {
     }, []),
   );
 
-  const searchProjectItem = async text => {
+
+  console.log('responce',responce)
+
+
+  const searchProjectItem = async (text) => {
     const searchList = responce?.filter((item) => {
-      console.log('iteem', item)
-      return item?.name?.toLowerCase()?.match(text?.toLocaleLowerCase()) || item?.date?.includes(text?.toLocaleLowerCase()) || item?.comment?.match(text)
+      return (
+        item?.name?.toLowerCase()?.includes(text?.toLocaleLowerCase()) ||
+        item?.date?.includes(text?.toLocaleLowerCase()) ||
+        item?.comment?.toLowerCase()?.includes(text?.toLocaleLowerCase())
+      );
     });
-    if (!isEmpty(searchList)) {
+
+    if (text === '') {
+      setResponce(userData);
+    } else if (!isEmpty(searchList)) {
       setResponce(searchList);
     }
-    if (text == '') {
-      setResponce(userData);
-    }
+
     setSearchText(text);
   };
 
-  const deleteItem = async index => {
-    Alert.alert(
-      'Are you sure?',
-      'If you pick yes, then your selected file will be removed from file list.',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
+  const deleteItem = async (index) => {
+    Alert.alert('Are you sure?', 'If you pick yes, then your selected file will be removed from the file list.', [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('Cancel Pressed'),
+        style: 'cancel',
+      },
+      {
+        text: 'OK',
+        onPress: async () => {
+          let UpdateArr = responce;
+          UpdateArr.splice(index, 1);
+          setResponce(UpdateArr);
+          setUpdateState(!updateState);
+          await save('dummyData', JSON.stringify(UpdateArr));
         },
-        {
-          text: 'OK',
-          onPress: async () => {
-            let UpdateArr = responce;
-            UpdateArr.splice(index, 1);
-            setResponce(UpdateArr);
-            setUpdateState(!updateState);
-            await save('dummyData', JSON.stringify(UpdateArr));
-          },
-        },
-      ],
+      },
+    ]);
+  };
+
+  const onBarcodeScan = (event) => {
+    if(event?.data !== ''){
+      setSearchText(event?.data);
+      searchProjectItem(event?.data)
+      setIsCameraOpen(false); 
+    }
+  };
+  const renderCamera = () => {
+    return (
+      <RNCamera
+      style={styles.camera}
+      type={RNCamera.Constants.Type.back}
+      onBarCodeRead={onBarcodeScan}
+      barCodeTypes={[RNCamera.Constants.BarCodeType.qr, RNCamera.Constants.BarCodeType.code128]}
+      captureAudio={false}
+    />
     );
   };
 
+  useEffect(() => {
+    if (isCameraOpen) {
+      navigation.setOptions({ tabBarVisible: false });
+    } else {
+      navigation.setOptions({ tabBarVisible: true });
+    }
+  }, [isCameraOpen]);
+
   return (
     <View style={{ flex: 1 }}>
-        <View style={{ flex: 1 }}>
-          <View
-            style={{
-              height: 70,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 10,
-            }}>
-            <TextInput
-              placeholderTextColor={'gray'}
-              style={{ width: '90%', color: 'black',paddingHorizontal:5,borderRadius:10,backgroundColor:'#cfcdc8'}}
-              value={searchText}
-              onChangeText={text => {
-                searchProjectItem(text);
-              }}
-              placeholder="Search"
+      <View style={{ flex: 1 }}>
+        <View
+          style={{
+            height: 70,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 10,
+          }}>
+          <PrimaryTextInput
+            placeholderTextColor={'gray'}
+            textInputContainerStyle={{
+              width: '90%',
+              color: 'black',
+              paddingHorizontal: 5,
+              borderRadius: 10,
+              backgroundColor: '#cfcdc8',
+            }}
+            value={searchText}
+            onChangeText={(text) => {
+              searchProjectItem(text);
+            }}
+            showCameraButton
+            placeholder="Search"
+            onCameraButtonPress={() => setIsCameraOpen(true)}
+          />
+          <TouchableOpacity
+            style={{ marginRight: 15 }}
+            onPress={() => navigation.navigate('Dashboard')}>
+            <Image
+              source={require('../assest/add.png')}
+              style={{ height: 20, width: 20 }}
             />
-            <TouchableOpacity onPress={() => navigation.navigate('Dashboard')}>
-              <Image
-                source={require('../assest/add.png')}
-                style={{ height: 20, width: 20 }}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {responce?.length == 0 || responce == null ? (
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ fontSize: 16, color: 'gray', textAlign: 'center' }}>
-                No Data Found
-              </Text>
-            </View>
-          ) : (
-            <FlatList
-              data={responce}
-              renderItem={({ item, index }) => {
-                console.log('item', item?.images[0]?.uri)
-                setTimeout(() => {
-                  
-                }, 1000);
-                return (
-                  <View style={styles.container}>
-                    <TouchableOpacity
-                      style={{ width: '75%', flexDirection: 'row' }}
-                      onPress={() => {
-                        const data = {
-                          item: item,
-                          index: index,
-                        };
-                        navigation.navigate('UserData', { userData: data });
-                      }}>
-                      <View style={{ justifyContent: 'center' }}>
-                        {item?.images[0]?.uri == undefined ?
-                          <Image source={require('../assest/no-pictures.png')} style={{ height: 40, width: 40, resizeMode: 'contain', borderRadius: 10 }} />
-                          :
-                          <FastImage 
-                          onLoad={()=>{
-                            console.log(item?.images[0]?.uri)
-                          }}
-                          source={{ uri: item?.images[0]?.uri }} style={{ height: 40, width: 40, resizeMode: 'contain', borderRadius: 10 }} />
-                        }
-                      </View>
-                      <View style={{ marginHorizontal: 15, width: '90%' }}>
-                        <Text style={styles.fontStyle}>
-                          {item.name}
-                        </Text>
-                        <Text style={styles.fontStyle}>{item.date}</Text>
-                        <Text style={styles.fontStyle} numberOfLines={1} >{item.comment}</Text>
-                      </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => {
-                        deleteItem(index);
-                      }}>
-                      <Image
-                        source={require('../assest/trash.png')}
-                        style={{ height: 25, width: 25, margin: 5 }}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                );
-              }}
-            />
-          )}
+          </TouchableOpacity>
         </View>
+
+        {isCameraOpen ? (
+          renderCamera()
+        ) : (
+          <FlatList
+            data={responce}
+            renderItem={({ item, index }) => {
+              return (
+                <View style={styles.container}>
+                  <TouchableOpacity
+                    style={{ width: '75%', flexDirection: 'row' }}
+                    onPress={() => {
+                      const data = {
+                        item: item,
+                        index: index,
+                      };
+                      navigation.navigate('UserData', { userData: data });
+                    }}>
+                    <View style={{ justifyContent: 'center' }}>
+                      {item?.images[0]?.uri == undefined ? (
+                        <Image
+                          source={require('../assest/no-pictures.png')}
+                          style={{
+                            height: 40,
+                            width: 40,
+                            resizeMode: 'contain',
+                            borderRadius: 10,
+                          }}
+                        />
+                      ) : (
+                        <FastImage
+                          source={{ uri: item?.images[0]?.uri }}
+                          style={{
+                            height: 40,
+                            width: 40,
+                            resizeMode: 'contain',
+                            borderRadius: 10,
+                          }}
+                        />
+                      )}
+                    </View>
+                    <View style={{ marginHorizontal: 15, width: '90%' }}>
+                      <Text style={styles.fontStyle}>{item.name}</Text>
+                      <Text style={styles.fontStyle}>{item.date}</Text>
+                      <Text style={styles.fontStyle} numberOfLines={1}>
+                        {item.comment}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      deleteItem(index);
+                    }}>
+                    <Image
+                      source={require('../assest/trash.png')}
+                      style={{ height: 25, width: 25, margin: 5 }}
+                    />
+                  </TouchableOpacity>
+                </View>
+              );
+            }}
+          />
+        )}
+      </View>
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -169,10 +217,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     backgroundColor: '#cfcfcf',
+    
   },
   fontStyle: {
     color: 'black',
-  }
+  },
+  camera: {
+    flex: 1,
+  },
 });
 
 export default HomeScreen;
