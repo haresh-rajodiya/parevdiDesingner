@@ -81,6 +81,17 @@ const HomeScreen = ({ navigation, route }) => {
   };
   const renderCamera = () => {
     return (
+
+<>
+        <TouchableOpacity
+          style={{alignSelf: 'flex-end', margin: 20 }}
+          onPress={()=>{setIsCameraOpen(false)}}
+        >
+          <Image
+            source={require('../assest/close.png')}
+            style={{ height: 20, width: 20 ,tintColor:'black',resizeMode:'contain'}}
+          />
+        </TouchableOpacity>
         <RNCamera
           style={styles.camera}
           type={RNCamera.Constants.Type.back}
@@ -88,11 +99,15 @@ const HomeScreen = ({ navigation, route }) => {
           barCodeTypes={[RNCamera.Constants.BarCodeType.qr, RNCamera.Constants.BarCodeType.code128]}
           captureAudio={false}
         />
+</>
+
     );
   };
 
+
+
+
   useEffect(() => {
-    setIsCameraOpen(false)
     if (isCameraOpen) {
       navigation.setOptions({ tabBarVisible: false });
     } else {
