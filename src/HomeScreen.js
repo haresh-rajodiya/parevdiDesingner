@@ -10,13 +10,14 @@ import {
   BackHandler,
 } from 'react-native';
 import { load, save } from './helper/storage';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { isEmpty } from 'lodash';
 import FastImage from 'react-native-fast-image';
 import PrimaryTextInput from './helper/TextInput';
 import { RNCamera } from 'react-native-camera';
 
 const HomeScreen = ({ navigation, route }) => {
+
   const [responce, setResponce] = useState([]);
   const [userData, setUserData] = useState([]);
   const [updateState, setUpdateState] = useState(false);
@@ -24,18 +25,27 @@ const HomeScreen = ({ navigation, route }) => {
   const [searchText, setSearchText] = useState('');
   const [isCameraOpen, setIsCameraOpen] = useState(false);
 
+  
+
+
+
   useFocusEffect(
     React.useCallback(async () => {
+      console.log('USEEDDTECT');
       var data1 = await load('dummyData');
       setSearchText('');
       setResponce(JSON.parse(data1));
       setUserData(JSON.parse(data1));
-     
+
     }, []),
   );
 
+
+
+  console.log('responce', responce)
+
   const searchProjectItem = async (text) => {
-    const searchList = responce?.filter((item) => {
+    const searchList = userData?.filter((item) => {
       return (
         item?.name?.toLowerCase()?.includes(text?.toLocaleLowerCase()) ||
         item?.date?.includes(text?.toLocaleLowerCase()) ||
@@ -43,8 +53,13 @@ const HomeScreen = ({ navigation, route }) => {
       );
     });
 
-    if (text === '') {
-      setResponce(userData);
+    console.log('searchList :::-------', searchList)
+
+
+    // setResponce(text?.length && searchList?.length !== 0  ?searchList :  userData );
+
+    if (isEmpty(searchList)) {
+      setResponce(responce);
     } else if (!isEmpty(searchList)) {
       setResponce(searchList);
     }
@@ -52,7 +67,8 @@ const HomeScreen = ({ navigation, route }) => {
     setSearchText(text);
   };
 
-  const deleteItem = async (index) => {
+  console.log('userData', userData)
+  const deleteItem = async (items,index) => {
     Alert.alert('Are you sure?', 'If you pick yes, then your selected file will be removed from the file list.', [
       {
         text: 'Cancel',
@@ -62,11 +78,11 @@ const HomeScreen = ({ navigation, route }) => {
       {
         text: 'OK',
         onPress: async () => {
-          let UpdateArr = responce;
-          UpdateArr.splice(index, 1);
-          setResponce(UpdateArr);
+          let tmp = userData?.filter((item) => item?.name !== items?.name)
+          setResponce(tmp);
+          setUserData(tmp);
           setUpdateState(!updateState);
-          await save('dummyData', JSON.stringify(UpdateArr));
+          await save('dummyData', JSON.stringify(tmp));
         },
       },
     ]);
@@ -82,14 +98,14 @@ const HomeScreen = ({ navigation, route }) => {
   const renderCamera = () => {
     return (
 
-<>
+      <>
         <TouchableOpacity
-          style={{alignSelf: 'flex-end', margin: 20 }}
-          onPress={()=>{setIsCameraOpen(false)}}
+          style={{ alignSelf: 'flex-end', margin: 20 }}
+          onPress={() => { setIsCameraOpen(false) }}
         >
           <Image
             source={require('../assest/close.png')}
-            style={{ height: 20, width: 20 ,tintColor:'black',resizeMode:'contain'}}
+            style={{ height: 20, width: 20, tintColor: 'black', resizeMode: 'contain' }}
           />
         </TouchableOpacity>
         <RNCamera
@@ -99,7 +115,7 @@ const HomeScreen = ({ navigation, route }) => {
           barCodeTypes={[RNCamera.Constants.BarCodeType.qr, RNCamera.Constants.BarCodeType.code128]}
           captureAudio={false}
         />
-</>
+      </>
 
     );
   };
@@ -203,7 +219,7 @@ const HomeScreen = ({ navigation, route }) => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => {
-                      deleteItem(index);
+                      deleteItem(item,index);
                     }}>
                     <Image
                       source={require('../assest/trash.png')}
