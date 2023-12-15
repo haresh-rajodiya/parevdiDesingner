@@ -7,16 +7,16 @@ import {
   StyleSheet,
   FlatList,
   Alert,
-  BackHandler,
+
 } from 'react-native';
 import { load, save } from './helper/storage';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { isEmpty } from 'lodash';
 import FastImage from 'react-native-fast-image';
 import PrimaryTextInput from './helper/TextInput';
 import { RNCamera } from 'react-native-camera';
 
-const HomeScreen = ({ navigation, route }) => {
+const HomeScreen = ({ navigation }) => {
 
   const [responce, setResponce] = useState([]);
   const [userData, setUserData] = useState([]);
@@ -31,7 +31,6 @@ const HomeScreen = ({ navigation, route }) => {
 
   useFocusEffect(
     React.useCallback(async () => {
-      console.log('USEEDDTECT');
       var data1 = await load('dummyData');
       setSearchText('');
       setResponce(JSON.parse(data1));
@@ -42,7 +41,6 @@ const HomeScreen = ({ navigation, route }) => {
 
 
 
-  console.log('responce', responce)
 
   const searchProjectItem = async (text) => {
     const searchList = userData?.filter((item) => {
@@ -53,11 +51,6 @@ const HomeScreen = ({ navigation, route }) => {
       );
     });
 
-    console.log('searchList :::-------', searchList)
-
-
-    // setResponce(text?.length && searchList?.length !== 0  ?searchList :  userData );
-
     if (isEmpty(searchList)) {
       setResponce(responce);
     } else if (!isEmpty(searchList)) {
@@ -67,7 +60,6 @@ const HomeScreen = ({ navigation, route }) => {
     setSearchText(text);
   };
 
-  console.log('userData', userData)
   const deleteItem = async (items,index) => {
     Alert.alert('Are you sure?', 'If you pick yes, then your selected file will be removed from the file list.', [
       {

@@ -19,9 +19,6 @@ const image = route?.params?.image
             </TouchableOpacity>
             <View style={{flex:1,width:'100%',height:'100%',backgroundColor:'black',alignItems:'center'}}>
             <FastImage
-             onLoad={()=>{
-                console.log(image)
-              }}
             source={{uri:image}} style={{width:'100%',height:'100%',resizeMode:"contain"}} />
             </View>
         </View>

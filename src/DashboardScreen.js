@@ -63,8 +63,6 @@ const DashboardScreen = ({ navigation }) => {
   
       if (data1 !== null) {
         const data2 = JSON.parse(data1);
-
-        console.log('data2',data2)
         const existingItem = data2.find(item => item.name === name);
   
         if (existingItem) {
@@ -92,7 +90,6 @@ const DashboardScreen = ({ navigation }) => {
     isOpenDocumentPressed = true;
     await ImagePicker.launchImageLibrary({ mediaType: 'photo', selectionLimit: 100,quality:1 })
       .then(res => {
-        console.log(res)
         isOpenDocumentPressed = false;
         if (fileResponse?.length) {
           let tmp = [...fileResponse, ...res?.assets];
@@ -332,10 +329,6 @@ const DashboardScreen = ({ navigation }) => {
                 <FlatList
                   data={fileResponse}
                   renderItem={({ item }) => {
-                    console.log(item?.fileName)
-                    setTimeout(() => {
-
-                    }, 1000);
                     return (
                       <View
                         style={[
@@ -360,9 +353,6 @@ const DashboardScreen = ({ navigation }) => {
                               alignItems: 'center',
                             }}>
                             <FastImage
-                              onLoad={() => {
-                                console.log(item?.uri)
-                              }}
                               source={{ uri: item?.uri }}
                               style={{
                                 height: 35,
