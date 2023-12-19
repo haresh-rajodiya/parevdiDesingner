@@ -5,7 +5,7 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  FlatList,
+  FlatList, 
   Alert,
 
 } from 'react-native';
@@ -60,7 +60,7 @@ const HomeScreen = ({ navigation }) => {
     setSearchText(text);
   };
 
-  const deleteItem = async (items,index) => {
+  const deleteItem = async (items) => {
     Alert.alert('Are you sure?', 'If you pick yes, then your selected file will be removed from the file list.', [
       {
         text: 'Cancel',
@@ -102,18 +102,15 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
         <RNCamera
           style={styles.camera}
-          type={RNCamera.Constants.Type.back}
+          type={'back'}
           onBarCodeRead={onBarcodeScan}
-          barCodeTypes={[RNCamera.Constants.BarCodeType.qr, RNCamera.Constants.BarCodeType.code128]}
+          barCodeTypes={['code128','qr','code39']}
           captureAudio={false}
         />
       </>
 
     );
   };
-
-
-
 
   useEffect(() => {
     if (isCameraOpen) {
