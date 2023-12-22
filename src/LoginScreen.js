@@ -1,6 +1,6 @@
 // Import necessary components from React and React Native
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, Alert, TouchableOpacity, Image } from 'react-native';
+import { View, Text, Alert, TouchableOpacity, Image } from 'react-native';
 import PrimaryTextInput from './helper/TextInput';
 
 // Define the LoginScreen component

@@ -1,5 +1,5 @@
 //import liraries
-import React, {Component, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Alert,
   ImageBackground,
+  ScrollView,
 } from 'react-native';
 import {load, save} from './helper/storage';
 import Share from 'react-native-share'
@@ -108,8 +109,13 @@ const UserDataScreen = ({route, navigation}) => {
           Date : {data?.item?.date}
         </Text>
         <Text style={[styles.name, {}]}>
-          Comment : {data?.item?.comment}
+          Comment: 
         </Text>
+        <ScrollView style={{height:200}}>
+        <Text style={[styles.name, {}]}>
+          {data?.item?.comment}
+        </Text>
+        </ScrollView>
       </View>
       <View style={{marginTop: 40}}>
         {data?.item?.images?.length === 0 ? (
